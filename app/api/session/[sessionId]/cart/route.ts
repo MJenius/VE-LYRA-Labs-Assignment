@@ -5,6 +5,7 @@ import { runUpsellAgent } from "@/lib/ai/agents/upsell";
 import { addCartItem, getCart } from "@/lib/services/cart";
 
 export const runtime = "nodejs";
+export const dynamic = "force-static";
 export const revalidate = 0;
 
 const AddCartBodySchema = z.object({

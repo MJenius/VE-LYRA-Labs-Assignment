@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createOrderAfterValidation } from "@/lib/services/order";
 
 export const runtime = "nodejs";
+export const dynamic = "force-static";
 export const revalidate = 0;
 
 const OrderBodySchema = z.object({
