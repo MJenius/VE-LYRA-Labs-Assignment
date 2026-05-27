@@ -3,7 +3,6 @@ import { z } from "zod";
 import { removeCartItem, updateCartItem } from "@/lib/services/cart";
 
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
 
 const PatchCartBodySchema = z.object({
   quantity: z.number().int().min(0).optional(),

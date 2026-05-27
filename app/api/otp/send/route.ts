@@ -3,7 +3,6 @@ import { z } from "zod";
 import { sendOtp } from "@/lib/services/otp";
 
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
 
 const SendOtpBodySchema = z.object({
   phone: z.string().min(10).max(16)
