@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createOrderAfterValidation } from "@/lib/services/order";
 
 export const runtime = "nodejs";
+export const revalidate = 0;
 
 const OrderBodySchema = z.object({
   customerName: z.string().min(2).max(80),

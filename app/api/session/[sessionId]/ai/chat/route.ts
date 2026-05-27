@@ -3,6 +3,7 @@ import { z } from "zod";
 import { handleUserMessage } from "@/lib/ai/orchestrator";
 
 export const runtime = "nodejs";
+export const revalidate = 0;
 
 const ChatBodySchema = z.object({
   tableId: z.string().min(1),

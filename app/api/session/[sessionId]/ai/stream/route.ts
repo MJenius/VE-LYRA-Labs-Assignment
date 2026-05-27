@@ -1,6 +1,7 @@
 import { getRecentMessages } from "@/lib/services/session";
 
 export const runtime = "nodejs";
+export const revalidate = 0;
 
 export async function GET(_request: Request, { params }: { params: Promise<{ sessionId: string }> }) {
   const { sessionId } = await params;

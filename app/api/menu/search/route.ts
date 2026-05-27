@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { searchMenuSemantically } from "@/lib/ai/rag";
 
 export const runtime = "nodejs";
+export const revalidate = 0;
 
 export function GET(request: Request) {
   const url = new URL(request.url);

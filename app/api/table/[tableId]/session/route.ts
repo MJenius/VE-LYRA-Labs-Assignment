@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getOrCreateSession, joinSession } from "@/lib/services/session";
 
 export const runtime = "nodejs";
+export const revalidate = 0;
 
 export async function GET(request: Request, { params }: { params: Promise<{ tableId: string }> }) {
   const { tableId } = await params;
