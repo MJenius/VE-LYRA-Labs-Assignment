@@ -6,6 +6,11 @@ import { CheckoutModal } from "@/components/CheckoutModal";
 import { MenuGrid } from "@/components/MenuGrid";
 import { SharedCart } from "@/components/SharedCart";
 import type { CartSnapshot, MenuItem, OrchestratorResponse, TableSession, UpsellSuggestion } from "@/lib/domain/types";
+import { menuItems } from "@/lib/data/menu";
+import { getOrCreateSessionFromStorage } from "@/lib/utils/mock-session";
+import { handleUserMessage } from "@/lib/ai/orchestrator";
+import { getDemoStore, createId, nowIso, addHours } from "@/lib/data/store";
+import { addCartItem, getCart, updateCartItem, removeCartItem } from "@/lib/services/cart";
 
 interface SmartDiningAppProps {
   tableId: string;
@@ -71,20 +76,52 @@ export function SmartDiningApp({ tableId }: SmartDiningAppProps) {
 
     async function boot() {
       try {
-        const [sessionResponse, menuResponse] = await Promise.all([
-          fetch(`/api/table/${tableId}/session?displayName=${encodeURIComponent(displayName)}`),
-          fetch("/api/menu")
-        ]);
+        const displayNameValue = displayName || "Guest";
+        
+        // Try to fetch from API, but fall back to mock data for static deployments
+        try {
+          const [sessionResponse, menuResponse] = await Promise.all([
+            fetch(`/api/table/${tableId}/session?displayName=${encodeURIComponent(displayNameValue)}`),
+            fetch("/api/menu")
+          ]);
 
-        if (!sessionResponse.ok || !menuResponse.ok) throw new Error("Unable to start table session");
+          if (sessionResponse.ok && menuResponse.ok) {
+            const sessionJson = (await sessionResponse.json()) as { session: TableSession };
+            const menuJson = (await menuResponse.json()) as { items: MenuItem[] };
+            if (cancelled) return;
 
-        const sessionJson = (await sessionResponse.json()) as { session: TableSession };
-        const menuJson = (await menuResponse.json()) as { items: MenuItem[] };
+            setSession(sessionJson.session);
+            setMenu(menuJson.items);
+            setCart(emptyCart(sessionJson.session.id));
+            setMessages([
+              {
+                id: "welcome",
+                role: "assistant",
+                text:
+                  "Hi, I am Zara. Tell me the vibe today and I will route it to the right dining agent: spicy, light, filling, dessert, drinks, or group order."
+              }
+            ]);
+            return;
+          }
+        } catch (apiError) {
+          // API call failed, will use fallback
+          console.debug("API call failed, using mock data", apiError);
+        }
+
+        // Fallback: Use mock session and static menu data
+        const mockSession = getOrCreateSessionFromStorage(tableId, displayNameValue);
+        
+        // Register mock session in the in-memory store so orchestrator can use it
+        const store = getDemoStore();
+        store.sessions.set(mockSession.id, mockSession);
+        store.cartItems.set(mockSession.id, []);
+        store.messages.set(mockSession.id, []);
+        
         if (cancelled) return;
 
-        setSession(sessionJson.session);
-        setMenu(menuJson.items);
-        setCart(emptyCart(sessionJson.session.id));
+        setSession(mockSession);
+        setMenu(menuItems);
+        setCart(emptyCart(mockSession.id));
         setMessages([
           {
             id: "welcome",
@@ -117,14 +154,34 @@ export function SmartDiningApp({ tableId }: SmartDiningAppProps) {
       setMessages((current) => [...current, userMessage]);
 
       try {
-        const response = await fetch(`/api/session/${session.id}/ai/chat`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ tableId, text, speaker: displayName })
-        });
+        let data: OrchestratorResponse | null = null;
 
-        if (!response.ok) throw new Error("AI orchestration failed");
-        const data = (await response.json()) as OrchestratorResponse;
+        // Try API first
+        try {
+          const response = await fetch(`/api/session/${session.id}/ai/chat`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ tableId, text, speaker: displayName })
+          });
+
+          if (response.ok) {
+            data = (await response.json()) as OrchestratorResponse;
+          }
+        } catch (apiError) {
+          // API call failed, will use fallback
+          console.debug("API call failed, using orchestrator directly", apiError);
+        }
+
+        // Fallback: Use orchestrator directly
+        if (!data) {
+          data = handleUserMessage({
+            sessionId: session.id,
+            tableId,
+            text,
+            speaker: displayName
+          });
+        }
+
         applyCart(data.cart);
         setMessages((current) => [
           ...current,
@@ -153,15 +210,35 @@ export function SmartDiningApp({ tableId }: SmartDiningAppProps) {
       setError(null);
 
       try {
-        const response = await fetch(`/api/session/${session.id}/cart`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ itemId, quantity: 1, addedBy: displayName })
-        });
+        let cartData: { cart: CartSnapshot; upsell?: UpsellSuggestion } | null = null;
 
-        if (!response.ok) throw new Error("Could not add item");
-        const data = (await response.json()) as { cart: CartSnapshot; upsell?: UpsellSuggestion };
-        applyCart(data.cart);
+        // Try API first
+        try {
+          const response = await fetch(`/api/session/${session.id}/cart`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ itemId, quantity: 1, addedBy: displayName })
+          });
+
+          if (response.ok) {
+            cartData = (await response.json()) as { cart: CartSnapshot; upsell?: UpsellSuggestion };
+          }
+        } catch (apiError) {
+          // API call failed, will use fallback
+          console.debug("API call failed, using cart service directly", apiError);
+        }
+
+        // Fallback: Use cart service directly
+        if (!cartData) {
+          const result = addCartItem(session.id, {
+            itemId,
+            quantity: 1,
+            addedBy: displayName
+          });
+          cartData = { cart: result.cart };
+        }
+
+        applyCart(cartData.cart);
 
         const added = menu.find((item) => item.id === itemId);
         setMessages((current) => [
@@ -170,7 +247,7 @@ export function SmartDiningApp({ tableId }: SmartDiningAppProps) {
             id: `cart-${Date.now()}`,
             role: "assistant",
             text: `${added?.name ?? "Item"} added from ${source}. Shared cart updated for Table ${tableId}.`,
-            upsell: data.upsell
+            upsell: cartData.upsell
           }
         ]);
       } catch (addError) {
@@ -184,14 +261,36 @@ export function SmartDiningApp({ tableId }: SmartDiningAppProps) {
     async (cartItemId: string, quantity: number) => {
       if (!session) return;
 
-      const response = await fetch(`/api/session/${session.id}/cart/${cartItemId}`, {
-        method: quantity <= 0 ? "DELETE" : "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: quantity <= 0 ? undefined : JSON.stringify({ quantity })
-      });
+      try {
+        // Try API first
+        try {
+          const response = await fetch(`/api/session/${session.id}/cart/${cartItemId}`, {
+            method: quantity <= 0 ? "DELETE" : "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: quantity <= 0 ? undefined : JSON.stringify({ quantity })
+          });
 
-      const data = (await response.json()) as { cart: CartSnapshot };
-      applyCart(data.cart);
+          if (response.ok) {
+            const data = (await response.json()) as { cart: CartSnapshot };
+            applyCart(data.cart);
+            return;
+          }
+        } catch (apiError) {
+          // API call failed, will use fallback
+          console.debug("API call failed, using cart service directly", apiError);
+        }
+
+        // Fallback: Use cart service directly
+        let cart: CartSnapshot;
+        if (quantity <= 0) {
+          cart = removeCartItem(session.id, cartItemId);
+        } else {
+          cart = updateCartItem(session.id, cartItemId, { quantity });
+        }
+        applyCart(cart);
+      } catch (error) {
+        console.error("Failed to update cart", error);
+      }
     },
     [applyCart, session]
   );
