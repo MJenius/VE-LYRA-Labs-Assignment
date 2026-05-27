@@ -1,0 +1,531 @@
+:root {
+  color-scheme: light;
+  --bg: #f6f8f5;
+  --surface: #ffffff;
+  --surface-strong: #eef5ef;
+  --ink: #14221a;
+  --muted: #617166;
+  --line: #dce6de;
+  --accent: #0f7a4f;
+  --accent-strong: #095d3c;
+  --accent-soft: #dff2e8;
+  --warning: #af4f0f;
+  --shadow: 0 18px 50px rgba(20, 34, 26, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+.app-shell {
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 1480px;
+  margin: 0 auto 16px;
+}
+
+.top-bar h1,
+.panel-heading h2,
+.menu-card h3 {
+  margin: 0;
+  letter-spacing: 0;
+}
+
+.top-bar h1 {
+  font-size: clamp(1.8rem, 4vw, 3.4rem);
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  color: var(--accent-strong);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.status-cluster,
+.tag-row,
+.quick-row,
+.category-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.status-cluster span,
+.tag-row span,
+.latency-pill,
+.route-label,
+.cart-count {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  padding: 7px 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.workspace-grid {
+  display: grid;
+  grid-template-columns: minmax(340px, 1.05fr) minmax(360px, 1.25fr) minmax(300px, 0.8fr);
+  gap: 16px;
+  max-width: 1480px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+.panel {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.panel-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.chat-panel,
+.menu-panel,
+.cart-panel {
+  height: calc(100vh - 128px);
+  min-height: 620px;
+}
+
+.chat-panel,
+.cart-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.quick-row {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.quick-row button,
+.category-strip button {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-strong);
+  color: var(--ink);
+  padding: 8px 11px;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.category-strip button.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.message-list {
+  flex: 1;
+  overflow: auto;
+  padding: 16px;
+}
+
+.message {
+  max-width: 94%;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.message p {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.message.user {
+  margin-left: auto;
+  background: var(--accent);
+  color: #fff;
+}
+
+.message.assistant {
+  background: var(--surface-strong);
+  border: 1px solid var(--line);
+}
+
+.message.pending {
+  color: var(--muted);
+}
+
+.suggestion-stack,
+.cart-lines {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.suggestion-card,
+.upsell-card,
+.cart-line {
+  display: grid;
+  grid-template-columns: 72px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 8px;
+}
+
+.suggestion-card img,
+.upsell-card img,
+.cart-line img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 7px;
+}
+
+.suggestion-card span,
+.cart-line span,
+.cart-line small,
+.upsell-card span,
+.category-label {
+  display: block;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.suggestion-card p,
+.upsell-card p,
+.menu-card p,
+.empty-state p {
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.4;
+}
+
+.suggestion-card button,
+.upsell-card button,
+.card-footer button,
+.chat-input button,
+.checkout-button,
+.checkout-form button,
+.confirmation button {
+  border-radius: 7px;
+  background: var(--accent);
+  color: #fff;
+  padding: 10px 12px;
+  font-weight: 900;
+}
+
+.upsell-card {
+  margin-top: 12px;
+  background: #f8fcf9;
+  border-color: #b9dac4;
+}
+
+.trace-box {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.chat-input {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  padding: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.chat-input input,
+.search-box input,
+.checkout-form input {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fff;
+  color: var(--ink);
+  padding: 12px;
+  outline: none;
+}
+
+.chat-input input:focus,
+.search-box input:focus,
+.checkout-form input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.menu-panel {
+  overflow: auto;
+}
+
+.search-box {
+  display: grid;
+  gap: 6px;
+  padding: 16px 16px 8px;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.category-strip {
+  padding: 8px 16px 14px;
+}
+
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 0 16px 16px;
+}
+
+.menu-card {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.menu-card > img {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.menu-card-body {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+}
+
+.card-footer,
+.totals div,
+.checkout-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cart-panel {
+  padding-bottom: 16px;
+}
+
+.cart-lines {
+  flex: 1;
+  overflow: auto;
+  padding: 16px;
+}
+
+.empty-state {
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  background: var(--surface-strong);
+  padding: 18px;
+}
+
+.cart-line {
+  grid-template-columns: 58px 1fr auto;
+}
+
+.cart-line img {
+  width: 58px;
+  height: 58px;
+}
+
+.stepper {
+  display: grid;
+  grid-template-columns: 32px 28px 32px;
+  align-items: center;
+  justify-items: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.stepper button {
+  width: 32px;
+  height: 32px;
+  background: #fff;
+  color: var(--ink);
+}
+
+.totals {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0 16px 16px;
+}
+
+.totals dt,
+.totals dd {
+  margin: 0;
+}
+
+.grand-total {
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+.checkout-button {
+  width: calc(100% - 32px);
+  margin: 0 16px;
+  min-height: 48px;
+}
+
+.error-banner,
+.form-error {
+  max-width: 1480px;
+  margin: 0 auto 12px;
+  border: 1px solid rgba(175, 79, 15, 0.35);
+  border-radius: 8px;
+  background: #fff7ed;
+  color: var(--warning);
+  padding: 12px 14px;
+  font-weight: 800;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(20, 34, 26, 0.42);
+  padding: 18px;
+  z-index: 20;
+}
+
+.checkout-modal {
+  width: min(520px, 100%);
+  max-height: min(760px, calc(100vh - 36px));
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.icon-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: var(--surface-strong);
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.checkout-form,
+.confirmation {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+
+.checkout-form label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.checkout-summary {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-strong);
+  padding: 12px;
+}
+
+@media (max-width: 1180px) {
+  .workspace-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .cart-panel {
+    grid-column: 1 / -1;
+    height: auto;
+    min-height: 360px;
+  }
+}
+
+@media (max-width: 760px) {
+  .app-shell {
+    padding: 12px;
+  }
+
+  .top-bar,
+  .workspace-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .chat-panel,
+  .menu-panel,
+  .cart-panel {
+    height: auto;
+    min-height: 520px;
+  }
+
+  .menu-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .suggestion-card,
+  .upsell-card {
+    grid-template-columns: 60px 1fr;
+  }
+
+  .suggestion-card button,
+  .upsell-card button {
+    grid-column: 1 / -1;
+  }
+
+  .chat-input {
+    grid-template-columns: 1fr;
+  }
+}
